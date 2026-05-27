@@ -21,4 +21,4 @@ Thumbs.db
 node_modules/
 
 # Gradle
-.gradle/
+.gradle/.idea/
