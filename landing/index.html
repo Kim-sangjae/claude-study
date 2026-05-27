@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claude-based Web Developer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0618;
+      --bg2: #130926;
+      --purple: #7c3aed;
+      --violet: #a78bfa;
+      --light: #ede9fe;
+      --muted: #8b7aa8;
+      --card: rgba(124, 58, 237, 0.08);
+      --border: rgba(124, 58, 237, 0.25);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--light);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 2rem;
+      background: rgba(13, 6, 24, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-weight: 700; font-size: 1.1rem;
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--violet); }
+
+    /* ── SECTIONS ── */
+    section { padding: 100px 2rem; max-width: 1000px; margin: 0 auto; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding-top: 120px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 999px; padding: .35rem 1rem;
+      font-size: .8rem; color: var(--violet); margin-bottom: 1.5rem;
+    }
+    .hero-badge span { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+
+    h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.2rem; }
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #c084fc 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 500px; margin-bottom: 2.5rem; }
+
+    .btn-group { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      padding: .75rem 1.8rem; border-radius: 8px; font-size: .95rem;
+      font-weight: 600; cursor: pointer; text-decoration: none; transition: all .2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #fff; border: none;
+      box-shadow: 0 0 20px rgba(124,58,237,.4);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(124,58,237,.6); }
+    .btn-outline {
+      background: transparent; color: var(--violet);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: var(--card); transform: translateY(-2px); }
+
+    .hero-glow {
+      position: absolute; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,.15) 0%, transparent 70%);
+      pointer-events: none; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+    #hero { position: relative; }
+
+    /* ── SECTION HEADER ── */
+    .section-header { text-align: center; margin-bottom: 3rem; }
+    .section-tag {
+      display: inline-block; font-size: .75rem; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--purple); font-weight: 700;
+      margin-bottom: .5rem;
+    }
+    h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; }
+    .section-desc { color: var(--muted); margin-top: .5rem; }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+    }
+    .skill-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      transition: all .3s; opacity: 0; transform: translateY(20px);
+    }
+    .skill-card.visible { opacity: 1; transform: translateY(0); }
+    .skill-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 0 20px rgba(124,58,237,.25);
+      transform: translateY(-4px);
+    }
+    .skill-icon { font-size: 2rem; margin-bottom: .75rem; }
+    .skill-name { font-weight: 600; font-size: 1rem; margin-bottom: .25rem; }
+    .skill-desc { font-size: .82rem; color: var(--muted); }
+
+    /* ── PROJECTS ── */
+    #projects { background: linear-gradient(180deg, transparent, rgba(124,58,237,.03), transparent); }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex; gap: .5rem;
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 12px; padding: .35rem;
+      margin-bottom: 2rem; width: fit-content; margin-left: auto; margin-right: auto;
+    }
+    .tab-btn {
+      padding: .55rem 1.4rem; border-radius: 8px; border: none;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      transition: all .2s; background: transparent; color: var(--muted);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(124,58,237,.4);
+    }
+    .tab-btn:not(.active):hover { color: var(--violet); background: var(--card); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .projects-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .project-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: all .3s; opacity: 0; transform: translateY(20px);
+    }
+    .project-card.visible { opacity: 1; transform: translateY(0); }
+    .project-card:hover {
+      border-color: var(--purple);
+      box-shadow: 0 8px 32px rgba(124,58,237,.2);
+      transform: translateY(-6px);
+    }
+    .project-preview {
+      height: 160px; display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, rgba(124,58,237,.2), rgba(168,85,247,.1));
+    }
+    .project-body { padding: 1.4rem; }
+    .project-badges { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .badge {
+      font-size: .7rem; padding: .2rem .65rem; border-radius: 999px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .badge-claude { background: rgba(124,58,237,.25); color: var(--violet); }
+    .badge-js { background: rgba(234,179,8,.15); color: #fbbf24; }
+    .badge-css { background: rgba(59,130,246,.15); color: #60a5fa; }
+    .badge-notion { background: rgba(255,255,255,.08); color: #ccc; }
+    .badge-github { background: rgba(100,200,100,.12); color: #86efac; }
+    .project-title { font-size: 1.1rem; font-weight: 700; margin-bottom: .4rem; }
+    .project-desc { font-size: .85rem; color: var(--muted); margin-bottom: 1rem; }
+    .project-link {
+      font-size: .85rem; font-weight: 600; color: var(--violet);
+      text-decoration: none; display: inline-flex; align-items: center; gap: .3rem;
+      transition: gap .2s;
+    }
+    .project-link:hover { gap: .6rem; }
+
+    /* ── CONTACT ── */
+    #contact { text-align: center; }
+    .contact-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3rem 2rem; max-width: 520px; margin: 0 auto;
+      opacity: 0; transform: translateY(20px); transition: all .5s;
+    }
+    .contact-card.visible { opacity: 1; transform: translateY(0); }
+    .contact-card p { color: var(--muted); margin-bottom: 2rem; }
+    .contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted); font-size: .82rem;
+    }
+    footer span { color: var(--purple); }
+
+    /* ── SCROLL FADE ── */
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      nav { padding: 1rem; }
+      .nav-links { gap: 1.2rem; }
+      section { padding: 80px 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">✦ Dev</div>
+    <ul class="nav-links">
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="https://kimsjpf.notion.site/Kim-sangjae-c085799e7d0083dd9bbc0155172f4dab?pvs=74" target="_blank" style="color:var(--violet);font-weight:600;">Notion ↗</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-badge"><span></span> Claude와 함께 개발 중</div>
+    <h1>
+      AI를 도구로 삼는<br />
+      <span class="gradient-text">웹 개발자</span>
+    </h1>
+    <p class="hero-sub">
+      Claude와 협업해 빠르고 창의적인 웹 경험을 만듭니다.<br />
+      아이디어를 코드로 전환하는 것을 즐깁니다.
+    </p>
+    <div class="btn-group">
+      <a href="#projects" class="btn btn-primary">프로젝트 보기</a>
+      <a href="https://kimsjpf.notion.site/Kim-sangjae-c085799e7d0083dd9bbc0155172f4dab?pvs=74" target="_blank" class="btn btn-outline">노션 포트폴리오 ↗</a>
+      <a href="#contact" class="btn btn-outline">연락하기</a>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-header fade-in">
+      <div class="section-tag">Skills</div>
+      <h2>사용하는 기술</h2>
+      <p class="section-desc">Claude AI를 핵심 도구로 활용하는 풀스택 웹 개발</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-icon">🌐</div>
+        <div class="skill-name">HTML / CSS</div>
+        <div class="skill-desc">시맨틱 마크업과 모던 CSS로 픽셀 퍼펙트 UI 구현</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">⚡</div>
+        <div class="skill-name">JavaScript</div>
+        <div class="skill-desc">바닐라 JS부터 ES2024까지, DOM 조작과 비동기 처리</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🤖</div>
+        <div class="skill-name">Claude AI</div>
+        <div class="skill-desc">AI와 페어프로그래밍으로 생산성과 코드 품질 향상</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🎨</div>
+        <div class="skill-name">UI / UX</div>
+        <div class="skill-desc">3D 효과, 애니메이션, 반응형 디자인으로 몰입감 있는 경험</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-header fade-in">
+      <div class="section-tag">Projects</div>
+      <h2>작업물 모아보기</h2>
+      <p class="section-desc">Claude 활용 여부로 나눠 보는 프로젝트 목록</p>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="tab-bar fade-in">
+      <button class="tab-btn active" data-tab="claude">🤖 Claude 사용</button>
+      <button class="tab-btn" data-tab="solo">✍️ 직접 개발</button>
+    </div>
+
+    <!-- Tab: Claude 사용 -->
+    <div class="tab-panel active" id="tab-claude">
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-preview">🧮</div>
+          <div class="project-body">
+            <div class="project-badges">
+              <span class="badge badge-claude">Claude</span>
+              <span class="badge badge-js">JavaScript</span>
+              <span class="badge badge-css">CSS 3D</span>
+            </div>
+            <div class="project-title">3D 계산기</div>
+            <div class="project-desc">
+              마우스 움직임에 반응하는 3D 원근감, 파티클 애니메이션,
+              키보드 지원을 갖춘 인터랙티브 계산기.
+            </div>
+            <a href="../calculator/index.html" class="project-link">열어보기 →</a>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-preview">🚀</div>
+          <div class="project-body">
+            <div class="project-badges">
+              <span class="badge badge-claude">Claude</span>
+              <span class="badge badge-js">JavaScript</span>
+            </div>
+            <div class="project-title">다음 프로젝트</div>
+            <div class="project-desc">
+              Claude와 함께 만들어 갈 다음 작업물. 아이디어는 언제나 현재진행형.
+            </div>
+            <a href="#contact" class="project-link">함께 만들기 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: 직접 개발 -->
+    <div class="tab-panel" id="tab-solo">
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-preview">🏨</div>
+          <div class="project-body">
+            <div class="project-badges">
+              <span class="badge badge-github">GitHub</span>
+              <span class="badge badge-notion">미배포</span>
+            </div>
+            <div class="project-title">Gaekdam</div>
+            <div class="project-desc">
+              B2B 호텔 CRM 시스템. 호텔 운영사를 위한 고객 관계 관리 및 예약 처리 플랫폼.
+            </div>
+            <a href="https://github.com/Kim-sangjae/gaekdam-project" target="_blank" class="project-link">GitHub 보기 →</a>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-preview">📚</div>
+          <div class="project-body">
+            <div class="project-badges">
+              <span class="badge badge-github">GitHub</span>
+              <span class="badge badge-notion">미배포</span>
+            </div>
+            <div class="project-title">Linkee</div>
+            <div class="project-desc">
+              CS 지식 학습 플랫폼. 개발자가 컴퓨터 과학 개념을 체계적으로 학습할 수 있는 서비스.
+            </div>
+            <a href="https://github.com/Kim-sangjae/linkee-project" target="_blank" class="project-link">GitHub 보기 →</a>
+          </div>
+        </div>
+        <div class="project-card">
+          <div class="project-preview">📍</div>
+          <div class="project-body">
+            <div class="project-badges">
+              <span class="badge badge-github">GitHub</span>
+              <span class="badge badge-notion">미배포</span>
+            </div>
+            <div class="project-title">JimWhere</div>
+            <div class="project-desc">
+              공간 대여 플랫폼. 사용자가 필요한 공간을 검색하고 손쉽게 예약할 수 있는 서비스.
+            </div>
+            <a href="https://github.com/Kim-sangjae/jimwhere-projcet" target="_blank" class="project-link">GitHub 보기 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="section-header fade-in">
+      <div class="section-tag">Contact</div>
+      <h2>함께 만들어요</h2>
+    </div>
+    <div class="contact-card">
+      <p>새로운 아이디어나 협업 제안이 있다면 언제든지 연락 주세요.</p>
+      <div class="contact-links">
+        <a href="mailto:kimsangjae94114@gmail.com" class="btn btn-primary">이메일 보내기</a>
+        <a href="https://github.com/Kim-sangjae" target="_blank" class="btn btn-outline">GitHub</a>
+        <a href="https://kimsjpf.notion.site/Kim-sangjae-c085799e7d0083dd9bbc0155172f4dab?pvs=74" target="_blank" class="btn btn-outline">Notion</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Built with <span>♥</span> and <span>Claude AI</span> · 2025</p>
+  </footer>
+
+  <script>
+    // Scroll fade-in animation
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+
+    document.querySelectorAll('.fade-in, .skill-card, .project-card, .contact-card')
+      .forEach(el => observer.observe(el));
+
+    // Stagger skill cards
+    document.querySelectorAll('.skill-card').forEach((card, i) => {
+      card.style.transitionDelay = `${i * 0.08}s`;
+    });
+
+    // Stagger + observe project cards in active tab
+    function initProjectCards(panel) {
+      panel.querySelectorAll('.project-card').forEach((card, i) => {
+        card.style.transitionDelay = `${i * 0.1}s`;
+        observer.observe(card);
+      });
+    }
+    initProjectCards(document.getElementById('tab-claude'));
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        const panel = document.getElementById(`tab-${target}`);
+        panel.classList.add('active');
+
+        // Reset and re-animate cards in newly shown tab
+        panel.querySelectorAll('.project-card').forEach(card => {
+          card.classList.remove('visible');
+          card.style.transitionDelay = '0s';
+        });
+        requestAnimationFrame(() => initProjectCards(panel));
+      });
+    });
+
+    // Hero subtle parallax on mouse move
+    const glow = document.querySelector('.hero-glow');
+    document.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5) * 30;
+      const y = (e.clientY / window.innerHeight - 0.5) * 30;
+      glow.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    });
+  </script>
+</body>
+</html>
