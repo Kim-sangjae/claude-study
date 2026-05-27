@@ -1,0 +1,24 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Build
+build/
+target/
+out/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+
+# Node
+node_modules/
+
+# Gradle
+.gradle/
