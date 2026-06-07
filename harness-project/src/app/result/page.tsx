@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { isQuizResult } from "@/lib/guard";
 import type { QuizResult } from "@/types";
@@ -9,8 +9,13 @@ import ResultCard from "@/components/ResultCard";
 export default function ResultPage() {
   const router = useRouter();
   const [result, setResult] = useState<QuizResult | null>(null);
+  const didRead = useRef(false);
 
   useEffect(() => {
+    // React Strict Mode가 dev에서 effect를 두 번 실행하므로 ref로 방어
+    if (didRead.current) return;
+    didRead.current = true;
+
     try {
       const raw = sessionStorage.getItem("cs-quiz-result");
       if (!raw) {
@@ -28,7 +33,7 @@ export default function ResultPage() {
       console.error("[ResultPage] sessionStorage read failed:", e);
       router.replace("/");
     }
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (result === null) return null;
 
