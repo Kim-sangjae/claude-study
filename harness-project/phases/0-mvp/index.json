@@ -12,7 +12,9 @@
     {
       "step": 1,
       "name": "core-types",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-08T00:35:07+0900",
+      "summary": "Category/Question/UserAnswer/QuizResult 타입 정의 + isQuizResult 가드 + 테스트 10개 통과"
     },
     {
       "step": 2,
