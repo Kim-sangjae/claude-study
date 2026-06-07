@@ -36,7 +36,10 @@
     {
       "step": 4,
       "name": "ui-components",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-08T03:44:11+0900",
+      "completed_at": "2026-06-08T03:55:00+0900",
+      "summary": "QuizCard/Navigator/ProgressBar/ResultCard 4개 컴포넌트 구현 완료. Client Component 경계 준수."
     },
     {
       "step": 5,
