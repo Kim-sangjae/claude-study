@@ -22,7 +22,7 @@
       "name": "question-data",
       "status": "completed",
       "started_at": "2026-06-08T03:15:32+0900",
-      "completed_at": "2026-06-08T03:37:28+0900",
+      "completed_at": "2026-06-08T03:38:36+0900",
       "summary": "questions.ts — 6개 카테고리 × 20문제 = 120개 작성. 무결성 테스트 13개 통과."
     },
     {
