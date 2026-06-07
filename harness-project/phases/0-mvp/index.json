@@ -46,7 +46,7 @@
       "name": "start-page",
       "status": "completed",
       "started_at": "2026-06-08T03:46:13+0900",
-      "completed_at": "2026-06-08T04:10:00+0900",
+      "completed_at": "2026-06-08T03:47:33+0900",
       "summary": "layout.tsx(메타데이터/다크 배경) + 시작 화면(/) Server Component 구현 완료"
     },
     {
