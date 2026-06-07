@@ -28,7 +28,10 @@
     {
       "step": 3,
       "name": "quiz-logic",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-08T03:38:36+0900",
+      "completed_at": "2026-06-08T03:40:00+0900",
+      "summary": "sample.ts(Fisher-Yates) + grade.ts 순수 함수 구현. 유닛 테스트 전부 통과."
     },
     {
       "step": 4,
