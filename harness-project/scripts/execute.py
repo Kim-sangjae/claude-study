@@ -10,6 +10,7 @@ import argparse
 import contextlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -19,7 +20,28 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def _find_claude() -> list[str]:
+    """Return the command list needed to invoke the Claude CLI cross-platform."""
+    if sys.platform == "win32":
+        # npm global installs register claude.cmd; .cmd files require cmd /c to
+        # run without shell=True. stdin is passed through by cmd /c correctly.
+        for name in ("claude.cmd", "claude"):
+            path = shutil.which(name)
+            if path:
+                if path.endswith(".cmd"):
+                    return ["cmd", "/c", path]
+                return [path]
+    else:
+        path = shutil.which("claude")
+        if path:
+            return [path]
+    return ["claude"]  # fallback — let subprocess raise a clear error
 
 
 @contextlib.contextmanager
@@ -235,9 +257,12 @@ class StepExecutor:
             sys.exit(1)
 
         prompt = preamble + step_file.read_text(encoding='utf-8')
+        claude_cmd = _find_claude()
+        # Pass prompt via stdin to avoid Windows 8191-char command line limit
         result = subprocess.run(
-            ["claude", "-p", "--dangerously-skip-permissions", "--output-format", "json", prompt],
-            cwd=self._root, capture_output=True, text=True, timeout=1800,
+            claude_cmd + ["-p", "--dangerously-skip-permissions", "--output-format", "json"],
+            input=prompt,
+            cwd=self._root, capture_output=True, text=True, encoding='utf-8', timeout=1800,
         )
 
         if result.returncode != 0:

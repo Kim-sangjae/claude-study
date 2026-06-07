@@ -1,0 +1,49 @@
+{
+  "project": "CS Quiz",
+  "phase": "0-mvp",
+  "steps": [
+    {
+      "step": 0,
+      "name": "project-setup",
+      "status": "completed",
+      "started_at": "2026-06-08T00:20:17+0900",
+      "summary": "Next.js 15 + Tailwind + Vitest 초기화 완료. src/ 디렉토리 구조 생성."
+    },
+    {
+      "step": 1,
+      "name": "core-types",
+      "status": "pending"
+    },
+    {
+      "step": 2,
+      "name": "question-data",
+      "status": "pending"
+    },
+    {
+      "step": 3,
+      "name": "quiz-logic",
+      "status": "pending"
+    },
+    {
+      "step": 4,
+      "name": "ui-components",
+      "status": "pending"
+    },
+    {
+      "step": 5,
+      "name": "start-page",
+      "status": "pending"
+    },
+    {
+      "step": 6,
+      "name": "quiz-page",
+      "status": "pending"
+    },
+    {
+      "step": 7,
+      "name": "result-page",
+      "status": "pending"
+    }
+  ],
+  "created_at": "2026-06-08T00:20:17+0900"
+}
