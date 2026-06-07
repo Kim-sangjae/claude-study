@@ -52,7 +52,10 @@
     {
       "step": 6,
       "name": "quiz-page",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-08T03:47:33+0900",
+      "completed_at": "2026-06-08T04:10:00+0900",
+      "summary": "퀴즈 진행 화면(/quiz) 구현 완료. 답안 upsert, 네비게이션, sessionStorage 에러 핸들링 포함."
     },
     {
       "step": 7,
