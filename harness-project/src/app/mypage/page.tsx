@@ -52,6 +52,7 @@ export default function MyPage() {
   const router = useRouter();
   const [history, setHistory] = useState<QuizResult[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedWrongId, setExpandedWrongId] = useState<string | null>(null);
 
   useEffect(() => {
     setHistory(loadHistory());
@@ -165,18 +166,62 @@ export default function MyPage() {
                       </p>
                     ) : (
                       <>
-                        <p className="text-xs text-neutral-500 mb-4">
+                        <p className="text-xs text-neutral-500 mb-3">
                           오답 {wrongItems.length}문제
                         </p>
-                        <div className="space-y-4">
-                          {wrongItems.map((item) => (
-                            <ResultCard
-                              key={item.question.id}
-                              questionNumber={item.questionNumber}
-                              question={item.question}
-                              userSelected={item.userAnswer!.selected}
-                            />
-                          ))}
+                        <div className="space-y-1">
+                          {wrongItems.map((item) => {
+                            const wrongKey = `${entry.submittedAt}-${item.question.id}`;
+                            const isWrongExpanded = expandedWrongId === wrongKey;
+                            return (
+                              <div key={item.question.id}>
+                                <button
+                                  className="w-full text-left px-3 py-2.5 rounded-md hover:bg-[#1a1a1a] transition-colors flex items-center justify-between gap-3"
+                                  onClick={() =>
+                                    setExpandedWrongId(isWrongExpanded ? null : wrongKey)
+                                  }
+                                >
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-xs text-neutral-600 flex-shrink-0">
+                                      {item.questionNumber}.
+                                    </span>
+                                    <span className="text-xs text-neutral-600 border border-neutral-800 rounded px-1.5 py-0.5 flex-shrink-0">
+                                      {item.question.category}
+                                    </span>
+                                    <span className="text-sm text-neutral-400 truncate">
+                                      {item.question.question}
+                                    </span>
+                                  </div>
+                                  <svg
+                                    width={12}
+                                    height={12}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                    className={`text-neutral-600 flex-shrink-0 transition-transform ${
+                                      isWrongExpanded ? "rotate-180" : ""
+                                    }`}
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      d="M19 9l-7 7-7-7"
+                                    />
+                                  </svg>
+                                </button>
+                                {isWrongExpanded && (
+                                  <div className="mt-2 mb-2">
+                                    <ResultCard
+                                      questionNumber={item.questionNumber}
+                                      question={item.question}
+                                      userSelected={item.userAnswer!.selected}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </>
                     )}
