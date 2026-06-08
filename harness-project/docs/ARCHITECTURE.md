@@ -8,8 +8,10 @@ src/
 │   ├── page.tsx               # 시작 화면 (Server Component)
 │   ├── quiz/
 │   │   └── page.tsx           # 퀴즈 진행 화면 (Client Component)
-│   └── result/
-│       └── page.tsx           # 결과 화면 (Client Component)
+│   ├── result/
+│   │   └── page.tsx           # 결과 화면 (Client Component)
+│   └── mypage/
+│       └── page.tsx           # 마이페이지 (Client Component) — 히스토리 + 오답 노트
 ├── components/
 │   ├── QuizCard.tsx           # 단일 문제 + 보기 4개
 │   ├── Navigator.tsx          # 1~30 번호 점프 네비게이터
@@ -19,7 +21,8 @@ src/
 │   └── questions.ts           # 전체 문제 정적 배열 (단일 진실 공급원)
 ├── lib/
 │   ├── sample.ts              # 랜덤 30문제 샘플링
-│   └── grade.ts               # 채점 및 QuizResult 생성
+│   ├── grade.ts               # 채점 및 QuizResult 생성
+│   └── history.ts             # localStorage 히스토리 read/write
 └── types/
     └── index.ts               # 공유 타입 정의
 ```
@@ -66,6 +69,7 @@ interface QuizResult {
 | `app/page.tsx` | Server Component | 정적 컨텐츠 + 문제 총 개수만 전달. 상호작용 없음. |
 | `app/quiz/page.tsx` | Client Component (`"use client"`) | useState로 퀴즈 상태 전체 관리 |
 | `app/result/page.tsx` | Client Component (`"use client"`) | sessionStorage 읽기, useEffect, useRouter |
+| `app/mypage/page.tsx` | Client Component (`"use client"`) | localStorage 읽기, accordion useState |
 | `components/QuizCard.tsx` | Client Component (`"use client"`) | onClick 이벤트 핸들러 포함 |
 | `components/Navigator.tsx` | Client Component (`"use client"`) | onClick 이벤트 핸들러 포함 |
 | `components/ProgressBar.tsx` | Server Component 가능 | props만 받아 렌더링. 이벤트 없음. |
@@ -135,6 +139,16 @@ export const questions: Question[] = [ ... ];
 - 최소 120개 유지 (CI 테스트로 검증)
 - 카테고리별 최소 15개 (CI 테스트로 검증)
 
+### `src/lib/history.ts`
+
+```ts
+function saveHistory(result: QuizResult): void  // localStorage에 최신 항목으로 prepend, 최대 20회 유지
+function loadHistory(): QuizResult[]             // localStorage에서 배열 파싱, 실패 시 []
+```
+
+- 두 함수 모두 try/catch로 감싸 localStorage 차단 환경에서 조용히 실패
+- `saveHistory`는 `/result` 컴포넌트 useEffect에서 sessionStorage 삭제 직후 호출
+
 ### `src/lib/guard.ts`
 
 ```ts
@@ -176,6 +190,14 @@ const [currentIndex, setCurrentIndex] = useState(0);           // 현재 문제 
 - **읽기**: `/result` 마운트 시 `JSON.parse`
 - **삭제**: `/result`에서 "다시 풀기" 클릭 시 `removeItem` 후 이동
 - **읽기 후 삭제**: `/result` 진입 성공 시 즉시 `removeItem` — 브라우저 뒤로가기로 재진입 시 리다이렉트 처리
+
+### localStorage 사용 규칙
+
+- **키**: `'cs-quiz-history'`
+- **쓰기**: `/result` 파싱 성공 후 `saveHistory(result)` 호출 (`src/lib/history.ts`)
+- **읽기**: `/mypage` 마운트 시 `loadHistory()` 호출
+- **최대 항목**: 20회 (초과 시 오래된 항목 자동 제거)
+- try/catch 필수 — private 모드 등 localStorage 차단 환경에서 앱이 죽으면 안 됨
 
 ---
 
