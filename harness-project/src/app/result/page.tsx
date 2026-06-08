@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { isQuizResult } from "@/lib/guard";
+import { saveHistory } from "@/lib/history";
 import type { QuizResult } from "@/types";
 import ResultCard from "@/components/ResultCard";
 
@@ -28,6 +29,7 @@ export default function ResultPage() {
         return;
       }
       sessionStorage.removeItem("cs-quiz-result"); // ADR-008: 파싱 직후 즉시 삭제
+      saveHistory(parsed);
       setResult(parsed);
     } catch (e) {
       console.error("[ResultPage] sessionStorage read failed:", e);
