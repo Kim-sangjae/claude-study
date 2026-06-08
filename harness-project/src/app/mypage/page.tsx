@@ -84,6 +84,7 @@ function computeProfileStats(history: QuizResult[]) {
       cat,
       label: CATEGORY_LABELS[cat],
       total,
+      correct,
       accuracy,
       level: getLevel(total),
       badge: getBadge(accuracy, total),
@@ -138,25 +139,40 @@ export default function MyPage() {
       {/* 카테고리별 프로필 */}
       <div className="bg-[#111111] border border-neutral-800 rounded-lg p-5 mb-6">
         <p className="text-xs text-neutral-500 mb-4">카테고리별 현황</p>
-        <div className="space-y-2.5">
-          {profileStats.map(({ cat, label, total, accuracy, level, badge }) => (
-            <div key={cat} className="flex items-center gap-3">
+        <div className="space-y-1">
+          {profileStats.map(({ cat, label, total, correct, accuracy, level, badge }) => (
+            <button
+              key={cat}
+              onClick={() => router.push(`/mypage/${cat}`)}
+              className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-[#1a1a1a] transition-colors text-left"
+            >
               <span className="text-sm text-neutral-300 w-16 flex-shrink-0">{label}</span>
               <span className="text-[10px] text-neutral-600 border border-neutral-800 rounded px-1.5 py-0.5 flex-shrink-0">
                 Lv.{level}
               </span>
-              {badge ? (
-                <BadgePill tier={badge} />
-              ) : (
-                <span className="w-[46px]" />
-              )}
+              <div className="w-[50px] flex-shrink-0">
+                {badge && <BadgePill tier={badge} />}
+              </div>
               <div className="flex items-center gap-2 ml-auto">
-                <span className="text-xs text-neutral-600">{total}문제</span>
+                <span className="text-xs text-neutral-600">
+                  {total > 0 ? `${correct}/${total}` : "–"}
+                </span>
                 <span className="text-xs text-neutral-400 w-8 text-right">
-                  {total > 0 ? `${accuracy}%` : "–"}
+                  {total > 0 ? `${accuracy}%` : ""}
                 </span>
               </div>
-            </div>
+              <svg
+                width={12}
+                height={12}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="text-neutral-700 flex-shrink-0"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           ))}
         </div>
       </div>
