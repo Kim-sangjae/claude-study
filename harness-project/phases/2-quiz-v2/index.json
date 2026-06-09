@@ -12,7 +12,9 @@
     {
       "step": 1,
       "name": "session-persist",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T03:45:56+0900",
+      "summary": "QuizSession DB 저장 API 생성. /result/[sessionId] 페이지로 전환. sessionStorage 의존성 완전 제거."
     },
     {
       "step": 2,
