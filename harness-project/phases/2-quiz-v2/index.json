@@ -19,7 +19,9 @@
     {
       "step": 2,
       "name": "attempt-tracking",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T03:53:31+0900",
+      "summary": "Prisma $transaction으로 QuizSession + QuestionAttempt + Question 통계 원자적 업데이트. 사용자 스트릭 업데이트 추가."
     }
   ],
   "created_at": "2026-06-10T03:42:31+0900"
