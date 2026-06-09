@@ -1,0 +1,10 @@
+{
+  "project": "CS Quiz",
+  "phase": "1-infra",
+  "steps": [
+    { "step": 0, "name": "db-schema", "status": "pending" },
+    { "step": 1, "name": "auth-setup", "status": "pending" },
+    { "step": 2, "name": "onboarding-header", "status": "pending" },
+    { "step": 3, "name": "seed-data", "status": "pending" }
+  ]
+}

@@ -103,3 +103,74 @@ MVP 속도 최우선. 외부 의존성 최소화. 작동하는 최소 구현을 
 **결정**: 문제 id를 `"{category}-{세 자리 순번}"` 형식으로 고정 (예: `os-001`, `network-042`)  
 **이유**: id가 자기 설명적(self-descriptive)이어서 데이터 관리 시 카테고리 파악이 용이. 숫자 id(1, 2, 3...)는 카테고리 간 충돌 및 의미 파악 어려움.  
 **트레이드오프**: id 부여 시 수동으로 순번 관리 필요. 자동 생성 id(UUID 등)보다 관리 부담 있음. 문제 수가 적은 MVP 규모에서는 수용 가능.
+
+---
+
+### ADR-013: Supabase를 데이터베이스로 선택
+**결정**: PostgreSQL 호스팅으로 Supabase 사용  
+**이유**:
+- 무료 티어로 개발/소규모 프로덕션 충분
+- 관리 UI (Table Editor), 마이그레이션 히스토리 제공
+- Prisma와 완전 호환 (PostgreSQL 표준)
+- Realtime 내장 (알림 폴링 대안으로 추후 활용 가능)
+
+**트레이드오프**: Supabase 의존성 추가. 다른 PostgreSQL 호스팅으로 이전 시 환경 변수만 변경하면 됨 (Prisma 덕분에 코드 변경 최소).
+
+---
+
+### ADR-014: NextAuth.js v5로 Google OAuth 구현
+**결정**: NextAuth.js v5 (Auth.js) + Google Provider  
+**이유**:
+- Next.js App Router 네이티브 지원
+- 세션 관리, CSRF 보호, OAuth 플로우 자동 처리
+- Prisma Adapter로 DB 세션 저장 가능
+- Next.js 커뮤니티 표준 인증 라이브러리
+
+**트레이드오프**: v5는 beta. v4와 일부 API 변경. 그러나 App Router 공식 지원은 v5만.
+
+---
+
+### ADR-015: Prisma ORM 선택
+**결정**: Prisma를 DB 접근 레이어로 사용  
+**이유**:
+- TypeScript 타입 자동 생성 → 런타임 오류 최소화
+- 스키마 기반 마이그레이션 → DB 변경 이력 추적
+- Supabase (PostgreSQL)와 완전 호환
+
+**트레이드오프**: Prisma Client 번들 크기 (~600KB). Edge Runtime 사용 제한 → API Routes는 Node.js Runtime으로 운영.
+
+---
+
+### ADR-016: TanStack Query로 클라이언트 서버 상태 관리
+**결정**: 클라이언트 컴포넌트의 서버 데이터 fetching에 TanStack Query 사용  
+**이유**:
+- 캐싱, 리페치, 로딩/에러 상태 자동 관리
+- `useMutation`으로 낙관적 업데이트 지원 (좋아요 즉시 반영)
+- `refetchInterval`로 알림 폴링 구현
+
+**트레이드오프**: 번들 크기 추가 (~40KB gzip). 서버 컴포넌트에서는 불필요 — 서버 컴포넌트는 직접 fetch.
+
+---
+
+### ADR-017: 키워드 검색에 PostgreSQL ILIKE 사용
+**결정**: 게시판 키워드 검색은 서버사이드 PostgreSQL ILIKE로 구현  
+**이유**:
+- 클라이언트 필터링: 전체 데이터 로드 후 필터 → 데이터 증가 시 성능 저하
+- Elasticsearch/Algolia: 외부 서비스 의존성, MVP 범위 초과
+- PostgreSQL ILIKE: 추가 인프라 없이 대소문자 무시 부분 매칭. 현재 규모에서 충분.
+
+**트레이드오프**: ILIKE는 인덱스를 완전히 활용 못함. `pg_trgm` GIN 인덱스로 개선 가능 (Supabase 대시보드에서 활성화 가능).
+
+---
+
+### ADR-018: 게시판 문제 상세에서 직접 풀기 기능 제외
+**결정**: `/board/[id]`에서 문제를 직접 풀 수 없다. 퀴즈 플로우(`/quiz`)에서만 풀기.  
+**이유**: 단일 문제 즉시 채점은 기존 세션 기반 채점·히스토리 로직과 별도 구현 필요. 게시판의 목적은 탐색과 커뮤니티 상호작용이며 학습은 퀴즈 플로우에 집중.  
+**트레이드오프**: 흥미로운 문제를 바로 풀 수 없는 UX 마찰. 추후 "이 문제 포함하여 퀴즈" 기능으로 개선 가능.
+
+---
+
+### ADR-019: question.attemptCount/correctCount 역정규화
+**결정**: `Question` 테이블에 `attemptCount`, `correctCount` 컬럼을 두어 집계 결과를 캐싱  
+**이유**: 게시판 목록에서 매 요청마다 `QuestionAttempt` 전체 집계 쿼리를 날리면 성능 저하. 퀴즈 제출 시 `$transaction`으로 원자적 업데이트하여 일관성 보장.  
+**트레이드오프**: 캐시 불일치 가능성 (트랜잭션 실패 시). 데이터 수정이 퀴즈 제출 1경로뿐이므로 리스크 낮음.

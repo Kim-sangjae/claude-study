@@ -1,0 +1,7 @@
+{
+  "project": "CS Quiz",
+  "phase": "4-admin",
+  "steps": [
+    { "step": 0, "name": "admin-panel", "status": "pending" }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "project": "CS Quiz",
+  "phase": "6-mypage-v2",
+  "steps": [
+    { "step": 0, "name": "mypage-enhance", "status": "pending" },
+    { "step": 1, "name": "settings", "status": "pending" }
+  ]
+}

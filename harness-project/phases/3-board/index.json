@@ -1,0 +1,10 @@
+{
+  "project": "CS Quiz",
+  "phase": "3-board",
+  "steps": [
+    { "step": 0, "name": "board-api", "status": "pending" },
+    { "step": 1, "name": "board-list-ui", "status": "pending" },
+    { "step": 2, "name": "board-detail", "status": "pending" },
+    { "step": 3, "name": "board-submit", "status": "pending" }
+  ]
+}
