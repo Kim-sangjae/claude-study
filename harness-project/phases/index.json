@@ -2,8 +2,31 @@
   "phases": [
     {
       "dir": "0-mvp",
-      "status": "error",
-      "failed_at": "2026-06-08T02:19:15+0900"
+      "status": "completed"
+    },
+    {
+      "dir": "1-infra",
+      "status": "pending"
+    },
+    {
+      "dir": "2-quiz-v2",
+      "status": "pending"
+    },
+    {
+      "dir": "3-board",
+      "status": "pending"
+    },
+    {
+      "dir": "4-admin",
+      "status": "pending"
+    },
+    {
+      "dir": "5-social",
+      "status": "pending"
+    },
+    {
+      "dir": "6-mypage-v2",
+      "status": "pending"
     }
   ]
 }

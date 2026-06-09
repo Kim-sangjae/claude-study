@@ -1,0 +1,9 @@
+{
+  "project": "CS Quiz",
+  "phase": "2-quiz-v2",
+  "steps": [
+    { "step": 0, "name": "quiz-select", "status": "pending" },
+    { "step": 1, "name": "session-persist", "status": "pending" },
+    { "step": 2, "name": "attempt-tracking", "status": "pending" }
+  ]
+}

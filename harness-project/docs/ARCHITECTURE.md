@@ -336,3 +336,233 @@ interface ResultCardProps {
 }
 // answer, explanation은 question에서 직접 읽음
 ```
+
+---
+
+## v2: 풀스택 아키텍처
+
+### 디렉토리 구조 (v2 추가)
+
+```
+src/
+├── app/
+│   ├── quiz/
+│   │   ├── page.tsx               # 카테고리/ALL 선택 화면 (신규)
+│   │   └── play/
+│   │       └── page.tsx           # 퀴즈 진행 (기존 /quiz → 이동)
+│   ├── board/
+│   │   ├── page.tsx               # 게시판 목록
+│   │   ├── [id]/page.tsx          # 게시판 상세
+│   │   └── submit/page.tsx        # 문제 등록
+│   ├── admin/page.tsx             # 관리자 패널
+│   ├── settings/page.tsx          # 계정 설정
+│   ├── auth/setup-nickname/
+│   │   └── page.tsx               # 닉네임 설정 온보딩
+│   └── api/
+│       ├── auth/[...nextauth]/route.ts
+│       ├── users/nickname/route.ts        # POST/PATCH: 닉네임
+│       ├── questions/
+│       │   ├── route.ts                   # GET(목록+검색), POST(등록)
+│       │   └── [id]/
+│       │       ├── route.ts               # GET(상세)
+│       │       ├── like/route.ts          # POST: 좋아요 토글
+│       │       └── report/route.ts        # POST: 신고
+│       ├── quiz/
+│       │   └── sessions/
+│       │       ├── route.ts               # POST: 세션 저장, GET: 히스토리
+│       │       └── [id]/route.ts          # GET: 세션 상세
+│       ├── rankings/route.ts              # GET: 카테고리별 TOP5
+│       ├── notifications/route.ts         # GET: 알림 목록, PATCH: 읽음
+│       ├── mypage/
+│       │   ├── stats/route.ts
+│       │   ├── sessions/route.ts
+│       │   ├── wrong-answers/route.ts
+│       │   ├── my-questions/route.ts
+│       │   └── liked-questions/route.ts
+│       └── admin/
+│           ├── questions/
+│           │   ├── route.ts
+│           │   └── [id]/route.ts
+│           └── reports/route.ts
+├── components/
+│   ├── Header.tsx                 # 공통 헤더 (Client Component)
+│   ├── NotificationBell.tsx       # 알림 벨 + 드롭다운 (Client Component)
+│   └── board/
+│       ├── SearchBar.tsx
+│       ├── FilterBar.tsx
+│       ├── QuestionCard.tsx
+│       ├── Pagination.tsx
+│       ├── LikeButton.tsx
+│       └── ReportModal.tsx
+├── lib/
+│   ├── auth.ts                    # NextAuth config + getSession 헬퍼
+│   └── prisma.ts                  # Prisma client singleton
+└── prisma/
+    ├── schema.prisma              # DB 스키마
+    └── seed.ts                    # 초기 데이터 시딩
+```
+
+---
+
+### 데이터베이스 스키마 (Prisma)
+
+```prisma
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  nickname     String?   @unique
+  avatarUrl    String?
+  role         Role      @default(USER)
+  streakCount  Int       @default(0)
+  lastQuizDate DateTime?
+  createdAt    DateTime  @default(now())
+
+  sessions      QuizSession[]
+  questions     Question[]
+  attempts      QuestionAttempt[]
+  likes         Like[]
+  reports       Report[]
+  notifications Notification[]
+}
+
+enum Role { USER ADMIN }
+
+model Question {
+  id              String         @id @default(cuid())
+  authorId        String?
+  category        String         // 'ds'|'algo'|'os'|'network'|'db'|'arch'
+  question        String
+  options         Json           // [string, string, string, string]
+  answer          Int            // 0|1|2|3
+  explanation     String
+  status          QuestionStatus @default(PENDING)
+  rejectionReason String?
+  attemptCount    Int            @default(0)  // 역정규화 캐시
+  correctCount    Int            @default(0)  // 역정규화 캐시
+  createdAt       DateTime       @default(now())
+
+  author   User?             @relation(fields: [authorId], references: [id])
+  attempts QuestionAttempt[]
+  likes    Like[]
+  reports  Report[]
+}
+
+enum QuestionStatus { OFFICIAL PENDING APPROVED REJECTED BLINDED }
+
+model QuizSession {
+  id          String   @id @default(cuid())
+  userId      String
+  category    String   // 'all' | category code
+  questionIds Json     // string[]
+  answers     Json     // { questionId: string, selected: number }[]
+  score       Int
+  submittedAt DateTime @default(now())
+
+  user     User              @relation(fields: [userId], references: [id])
+  attempts QuestionAttempt[]
+}
+
+model QuestionAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  questionId  String
+  sessionId   String
+  selected    Int
+  isCorrect   Boolean
+  attemptedAt DateTime @default(now())
+
+  user     User        @relation(fields: [userId], references: [id])
+  question Question    @relation(fields: [questionId], references: [id])
+  session  QuizSession @relation(fields: [sessionId], references: [id])
+}
+
+model Like {
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@id([userId, questionId])
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  reporterId  String
+  questionId  String
+  reason      ReportReason
+  description String?
+  status      ReportStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+
+  reporter User     @relation(fields: [reporterId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@unique([reporterId, questionId])
+}
+
+enum ReportReason { INAPPROPRIATE ERROR DUPLICATE OTHER }
+enum ReportStatus { PENDING REVIEWED }
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  payload   Json             // { questionId, questionTitle, rejectionReason? }
+  actionUrl String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum NotificationType { QUESTION_APPROVED QUESTION_REJECTED }
+```
+
+---
+
+### 렌더링 전략 (v2 추가)
+
+| 페이지/컴포넌트 | 타입 | 이유 |
+|----------------|------|------|
+| `app/quiz/page.tsx` | Server Component | 문제 수 조회, 정적에 가까움 |
+| `app/board/page.tsx` | Server Component + Client 검색바 | 검색/정렬은 URL params + SSR |
+| `app/board/[id]/page.tsx` | Server Component + Client 버튼 | 좋아요/신고 버튼만 Client 분리 |
+| `app/board/submit/page.tsx` | Client Component | 폼 상태 관리 |
+| `app/admin/page.tsx` | Client Component | 실시간 상태 변경 |
+| `components/Header.tsx` | Client Component | useSession, useRouter |
+| `components/NotificationBell.tsx` | Client Component | 30초 폴링 |
+
+---
+
+### 미들웨어 (`middleware.ts`)
+
+```
+보호 경로: /quiz/*, /board/submit, /mypage/*, /settings, /admin
+1. 비로그인 → /api/auth/signin?callbackUrl=...
+2. 닉네임 미설정 → /auth/setup-nickname?callbackUrl=...
+3. /admin → role !== ADMIN → /
+```
+
+---
+
+### 환경 변수
+
+```bash
+DATABASE_URL=          # Supabase connection pooler URL (Prisma용)
+DIRECT_URL=            # Supabase direct connection URL (마이그레이션용)
+NEXTAUTH_SECRET=       # openssl rand -base64 32
+NEXTAUTH_URL=          # http://localhost:3000 (dev)
+GOOGLE_CLIENT_ID=      # Google OAuth App Client ID
+GOOGLE_CLIENT_SECRET=  # Google OAuth App Client Secret
+```
+
+---
+
+### TanStack Query 사용 규칙
+
+- 클라이언트 컴포넌트에서 서버 데이터 fetching: TanStack Query (`useQuery`, `useMutation`)
+- 서버 컴포넌트: `fetch()` 또는 Prisma 직접 호출
+- 폴링이 필요한 데이터(알림): `refetchInterval: 30_000`
+- `QueryClientProvider`는 `src/app/providers.tsx`에서 최상위 래핑

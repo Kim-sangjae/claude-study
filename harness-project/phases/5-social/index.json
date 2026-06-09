@@ -1,0 +1,8 @@
+{
+  "project": "CS Quiz",
+  "phase": "5-social",
+  "steps": [
+    { "step": 0, "name": "main-ranking", "status": "pending" },
+    { "step": 1, "name": "notifications", "status": "pending" }
+  ]
+}
