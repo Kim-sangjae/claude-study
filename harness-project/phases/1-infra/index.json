@@ -5,15 +5,18 @@
     {
       "step": 0,
       "name": "db-schema",
-      "status": "error",
-      "started_at": "2026-06-10T00:32:30+0900",
-      "error_message": "[3회 시도 후 실패] Step did not update status",
-      "failed_at": "2026-06-10T00:32:30+0900"
+      "status": "completed",
+      "started_at": "2026-06-10T00:33:51+0900",
+      "completed_at": "2026-06-10T01:00:00+0900",
+      "summary": "Prisma 7 스키마 생성(7모델), prisma.config.ts(dotenv+DIRECT_URL), src/lib/prisma.ts(datasourceUrl), migrate dev --name init 완료"
     },
     {
       "step": 1,
       "name": "auth-setup",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T00:50:47+0900",
+      "completed_at": "2026-06-10T01:10:00+0900",
+      "summary": "NextAuth v5 Google Provider + Prisma Adapter 설정 완료. 미들웨어 라우트 보호 구성. Prisma 7 pg adapter(PrismaPg) 적용, NextAuth 모델(Account/Session/VerificationToken) 마이그레이션 완료."
     },
     {
       "step": 2,
