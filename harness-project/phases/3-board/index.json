@@ -26,7 +26,9 @@
     {
       "step": 3,
       "name": "board-submit",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T04:08:35+0900",
+      "summary": "게시판 문제 등록 폼 (/board/submit) 구현 완료. 카테고리·문제·보기·정답·해설 필드, 글자 수 카운터, 제출 → /board 이동."
     }
   ],
   "created_at": "2026-06-10T03:57:33+0900"
