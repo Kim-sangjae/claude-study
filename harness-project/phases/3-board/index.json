@@ -19,7 +19,9 @@
     {
       "step": 2,
       "name": "board-detail",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T04:05:40+0900",
+      "summary": "게시판 상세 페이지 + 좋아요 API + 신고 API + LikeButton + ReportModal 구현 완료."
     },
     {
       "step": 3,
