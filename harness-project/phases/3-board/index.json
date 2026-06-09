@@ -12,7 +12,9 @@
     {
       "step": 1,
       "name": "board-list-ui",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T04:02:25+0900",
+      "summary": "게시판 목록 UI 구현 완료 (SearchBar, FilterBar, QuestionCard, Pagination, board/page.tsx)."
     },
     {
       "step": 2,
