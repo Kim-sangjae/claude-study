@@ -7,7 +7,8 @@
       "name": "main-ranking",
       "status": "completed",
       "started_at": "2026-06-10T14:28:40+0900",
-      "summary": "메인 페이지에 카테고리별 TOP5 랭킹 섹션 추가. 60초 revalidation 적용. src/lib/rankings.ts(buildRankings), src/app/api/rankings/route.ts(GET), src/components/RankingSection.tsx(Client 탭+테이블) 생성. page.tsx async Server Component로 전환, unstable_cache로 DB 쿼리 캐싱, 본인 행 하이라이트."
+      "summary": "메인 페이지에 카테고리별 TOP5 랭킹 섹션 추가. 60초 revalidation 적용. src/lib/rankings.ts(buildRankings), src/app/api/rankings/route.ts(GET), src/components/RankingSection.tsx(Client 탭+테이블) 생성. page.tsx async Server Component로 전환, unstable_cache로 DB 쿼리 캐싱, 본인 행 하이라이트.",
+      "completed_at": "2026-06-10T14:35:48+0900"
     },
     {
       "step": 1,
