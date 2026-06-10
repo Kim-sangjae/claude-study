@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import NotificationBell from './NotificationBell';
 
 export default function Header() {
   const { data: session } = useSession();
@@ -32,6 +33,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {user ? (
             <>
+              <NotificationBell />
               <Link
                 href="/mypage"
                 className="text-sm text-neutral-300 hover:text-white transition-colors"

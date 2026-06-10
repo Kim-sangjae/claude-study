@@ -1,12 +1,27 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { questions } from "@/data/questions";
+import { getServerUser } from "@/lib/auth";
+import { buildRankings, type CategoryRankings } from "@/lib/rankings";
+import RankingSection from "@/components/RankingSection";
 
 const total = questions.length;
 
-export default function Home() {
+const EMPTY_RANKINGS: CategoryRankings = {
+  ds: [], algo: [], os: [], network: [], db: [], arch: [],
+};
+
+const getCachedRankings = unstable_cache(buildRankings, ['rankings'], { revalidate: 60 });
+
+export default async function Home() {
+  const [user, rankings] = await Promise.all([
+    getServerUser(),
+    getCachedRankings().catch(() => EMPTY_RANKINGS),
+  ]);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4">
-      <div className="max-w-2xl w-full">
+    <main className="min-h-screen px-4 py-16">
+      <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-semibold text-white">CS Quiz</h1>
           <Link
@@ -24,6 +39,7 @@ export default function Home() {
         >
           문제 풀기 시작
         </Link>
+        <RankingSection rankings={rankings} currentUserId={user?.id ?? null} />
       </div>
     </main>
   );
