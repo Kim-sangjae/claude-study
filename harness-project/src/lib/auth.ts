@@ -8,11 +8,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Google],
   session: { strategy: 'jwt' },
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.nickname = (user as { nickname?: string | null }).nickname ?? null;
         token.role = (user as { role?: string }).role ?? 'USER';
+      }
+      if (trigger === 'update' && (session as { nickname?: string })?.nickname !== undefined) {
+        token.nickname = (session as { nickname: string }).nickname;
       }
       return token;
     },

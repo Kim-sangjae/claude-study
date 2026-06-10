@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ResultCard from "@/components/ResultCard";
-import { loadHistory } from "@/lib/history";
-import type { Category, Question, UserAnswer } from "@/types";
+import type { Category, Question } from "@/types";
 
 const CATEGORY_LABELS: Record<Category, string> = {
   ds: "자료구조",
@@ -18,9 +17,8 @@ const CATEGORY_LABELS: Record<Category, string> = {
 const VALID_CATEGORIES = new Set<string>(["ds", "algo", "os", "network", "db", "arch"]);
 
 interface WrongItem {
-  question: Question;
-  userAnswer: UserAnswer;
-  questionNumber: number;
+  question: { id: string; category: string; question: string; options: unknown; answer: number; explanation: string };
+  selected: number;
   wrongCount: number;
 }
 
@@ -45,39 +43,16 @@ export default function CategoryWrongNotePage() {
       return;
     }
 
-    const history = loadHistory();
-
-    // 1패스: 전체 틀린 횟수 집계
-    const wrongCounts = new Map<string, number>();
-    for (const result of history) {
-      for (const q of result.questions) {
-        if (q.category !== category) continue;
-        const ans = result.answers.find((a) => a.questionId === q.id);
-        if (!ans || ans.selected === q.answer) continue;
-        wrongCounts.set(q.id, (wrongCounts.get(q.id) ?? 0) + 1);
-      }
-    }
-
-    // 2패스: 최신 회차 기준 dedupe (history는 최신순)
-    const seen = new Map<string, WrongItem>();
-    for (const result of history) {
-      result.questions.forEach((q, i) => {
-        if (q.category !== category) return;
-        const ans = result.answers.find((a) => a.questionId === q.id);
-        if (!ans || ans.selected === q.answer) return;
-        if (!seen.has(q.id)) {
-          seen.set(q.id, {
-            question: q,
-            userAnswer: ans,
-            questionNumber: i + 1,
-            wrongCount: wrongCounts.get(q.id) ?? 1,
-          });
-        }
+    fetch(`/api/mypage/wrong-answers?category=${category}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setItems((data as { items: WrongItem[] }).items ?? []);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setItems([]);
+        setLoaded(true);
       });
-    }
-
-    setItems(Array.from(seen.values()));
-    setLoaded(true);
   }, [category, router]);
 
   if (!loaded) return null;
@@ -104,7 +79,7 @@ export default function CategoryWrongNotePage() {
         <>
           <p className="text-xs text-neutral-500 mb-3">오답 {items.length}문제</p>
           <div className="space-y-2">
-            {items.map((item) => {
+            {items.map((item, idx) => {
               const isExpanded = expandedId === item.question.id;
               const titleColor = wrongCountColor(item.wrongCount);
               return (
@@ -149,9 +124,9 @@ export default function CategoryWrongNotePage() {
                   {isExpanded && (
                     <div className="border-t border-neutral-800 p-4">
                       <ResultCard
-                        questionNumber={item.questionNumber}
-                        question={item.question}
-                        userSelected={item.userAnswer.selected}
+                        questionNumber={idx + 1}
+                        question={item.question as unknown as Question}
+                        userSelected={item.selected as 0 | 1 | 2 | 3}
                       />
                     </div>
                   )}
