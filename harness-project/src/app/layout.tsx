@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "./providers";
+import Header from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "CS Quiz",
@@ -14,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="bg-[#0a0a0a] min-h-screen text-white antialiased">
-        {children}
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

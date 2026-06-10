@@ -130,7 +130,8 @@ class StepExecutor:
 
     def _run_git(self, *args) -> subprocess.CompletedProcess:
         cmd = ["git"] + list(args)
-        return subprocess.run(cmd, cwd=self._root, capture_output=True, text=True)
+        return subprocess.run(cmd, cwd=self._root, capture_output=True, text=True,
+                              encoding='utf-8', errors='replace')
 
     def _checkout_branch(self):
         branch = f"feat-{self._phase_name}"
@@ -258,11 +259,17 @@ class StepExecutor:
 
         prompt = preamble + step_file.read_text(encoding='utf-8')
         claude_cmd = _find_claude()
-        # Pass prompt via stdin to avoid Windows 8191-char command line limit
-        result = subprocess.run(
+        # Pass prompt via stdin to avoid Windows 8191-char command line limit.
+        # Use binary mode to avoid Windows codepage/encoding mismatch (cp949 vs utf-8).
+        result_raw = subprocess.run(
             claude_cmd + ["-p", "--dangerously-skip-permissions", "--output-format", "json"],
-            input=prompt,
-            cwd=self._root, capture_output=True, text=True, encoding='utf-8', timeout=1800,
+            input=prompt.encode('utf-8'),
+            cwd=self._root, capture_output=True, timeout=1800,
+        )
+        result = types.SimpleNamespace(
+            returncode=result_raw.returncode,
+            stdout=result_raw.stdout.decode('utf-8', errors='replace') if result_raw.stdout else '',
+            stderr=result_raw.stderr.decode('utf-8', errors='replace') if result_raw.stderr else '',
         )
 
         if result.returncode != 0:
