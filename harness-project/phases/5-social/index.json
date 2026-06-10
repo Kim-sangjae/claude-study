@@ -13,7 +13,10 @@
     {
       "step": 1,
       "name": "notifications",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T14:35:49+0900",
+      "summary": "알림 API + NotificationBell 컴포넌트(30초 폴링, 드롭다운) 구현 완료. Header에 통합.",
+      "completed_at": "2026-06-10T15:00:00+0900"
     }
   ],
   "created_at": "2026-06-10T14:28:40+0900"
