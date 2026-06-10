@@ -12,7 +12,9 @@
     {
       "step": 1,
       "name": "settings",
-      "status": "pending"
+      "status": "completed",
+      "started_at": "2026-06-10T14:48:37+0900",
+      "summary": "계정 설정 페이지(/settings) 구현 완료. 닉네임 변경 PATCH API 추가(동일닉네임 400/중복 409). auth.ts update 트리거로 JWT 세션 즉시 갱신. 로그아웃 기능 포함."
     }
   ],
   "created_at": "2026-06-10T14:39:46+0900"
